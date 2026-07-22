@@ -1,0 +1,6 @@
+# Fastlane Appfile
+# The Play Store package name for this demo app.
+package_name("com.demo.rickmorty")
+
+# For real Play Store deployment you'd also set:
+# json_key_file("path/to/play-store-service-account.json")

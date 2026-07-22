@@ -1,0 +1,137 @@
+# ============================================
+# Gradle
+# ============================================
+.gradle/
+**/build/
+.kotlin/
+
+# Ignore Gradle cache
+.gradle-cache/
+
+# ============================================
+# Local machine configuration
+# ============================================
+local.properties
+
+# ============================================
+# Android Studio / IntelliJ IDEA
+# ============================================
+.idea/
+*.iml
+
+# User-specific IDE files
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# ============================================
+# Android generated files
+# ============================================
+captures/
+.externalNativeBuild/
+.cxx/
+
+# KSP / KAPT generated sources
+**/generated/
+**/ksp/
+
+# ============================================
+# APK / Bundle
+# ============================================
+*.apk
+*.aab
+*.ap_
+
+# ============================================
+# Mapping / Crashlytics
+# ============================================
+mapping/
+outputs/
+
+# ============================================
+# Logs
+# ============================================
+*.log
+
+# ============================================
+# macOS
+# ============================================
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ============================================
+# Windows
+# ============================================
+Thumbs.db
+Desktop.ini
+
+# ============================================
+# Linux
+# ============================================
+*~
+
+# ============================================
+# Signing keys (Never commit)
+# ============================================
+*.jks
+*.keystore
+*.p12
+*.pem
+
+# ============================================
+# Firebase / Secrets
+# Uncomment if these files contain secrets
+# ============================================
+# google-services.json
+# firebase.json
+# secrets.properties
+# keystore.properties
+
+# ============================================
+# Temporary files
+# ============================================
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# ============================================
+# Kotlin
+# ============================================
+*.kotlin_module
+
+# ============================================
+# Misc
+# ============================================
+.vscode/
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/readme.md
+
+# Ruby / Bundler
+/vendor/bundle
+.bundle

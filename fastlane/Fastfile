@@ -1,0 +1,55 @@
+default_platform(:android)
+
+platform :android do
+
+  desc "Run unit tests"
+  lane :test do
+    gradle(task: "testDebugUnitTest")
+  end
+
+  desc "Run Android Lint"
+  lane :lint do
+    gradle(task: "lintDebug")
+  end
+
+  desc "Build a debug APK (used for local/interview demo runs)"
+  lane :build_debug do
+    gradle(task: "assembleDebug")
+  end
+
+  desc "Build a release APK"
+  lane :build_release do
+    gradle(
+      task: "assemble",
+      build_type: "Release"
+    )
+  end
+
+  desc "Build a release AAB (App Bundle) for Play Store upload"
+  lane :build_bundle do
+    gradle(task: "bundleRelease")
+  end
+
+  desc "Full CI pipeline: lint -> unit tests -> assemble debug"
+  lane :ci do
+    lint
+    test
+    build_debug
+  end
+
+  desc "Deploy a release build to the Play Store internal testing track"
+  lane :deploy_internal do
+    build_bundle
+    upload_to_play_store(
+      track: "internal",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  error do |lane, exception, options|
+    UI.error("Fastlane lane #{lane} failed: #{exception.message}")
+  end
+end
