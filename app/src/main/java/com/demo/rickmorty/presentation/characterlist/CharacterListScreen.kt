@@ -64,7 +64,7 @@ fun CharacterListScreen(
     CharacterListContent(
         state = state,
         pagingItems = pagingItems,
-        onIntent = viewModel::onIntent
+        onIntent = { viewModel.onIntent(it) }
     )
 }
 

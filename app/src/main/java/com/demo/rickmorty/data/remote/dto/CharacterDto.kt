@@ -1,15 +1,14 @@
 package com.demo.rickmorty.data.remote.dto
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.JsonClass
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class CharacterResponseDto(
     val info: PageInfoDto,
     val results: List<CharacterDto>
 )
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class PageInfoDto(
     val count: Int,
     val pages: Int,
@@ -17,7 +16,7 @@ data class PageInfoDto(
     val prev: String? = null
 )
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class CharacterDto(
     val id: Int,
     val name: String,
@@ -29,7 +28,7 @@ data class CharacterDto(
     val location: LocationRefDto
 )
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class LocationRefDto(
     val name: String,
     val url: String = ""
