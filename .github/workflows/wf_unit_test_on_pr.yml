@@ -1,6 +1,11 @@
 name: Unit Test on PR
 
 on:
+  workflow_dispatch:
+    inputs:
+      notes:
+        default: "Default note"
+        description: "What's new"
   pull_request:
     branches: [ "main" ]
     types: [opened, reopened, synchronize]
