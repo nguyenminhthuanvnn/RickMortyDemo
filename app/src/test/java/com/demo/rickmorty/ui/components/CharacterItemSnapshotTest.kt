@@ -5,6 +5,7 @@ import app.cash.paparazzi.Paparazzi
 import com.demo.rickmorty.domain.model.Character
 import com.demo.rickmorty.domain.model.CharacterStatus
 import com.demo.rickmorty.presentation.theme.RickMortyTheme
+import com.demo.rickmorty.util.MainDispatcherRule
 import org.junit.Rule
 import org.junit.Test
 
@@ -13,6 +14,9 @@ class CharacterItemSnapshotTest {
     val paparazzi = Paparazzi(
         deviceConfig = DeviceConfig.PIXEL_5
     )
+
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
 
     @Test
     fun characterItem_Alive() {

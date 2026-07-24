@@ -4,12 +4,12 @@ platform :android do
 
   desc "Run unit tests"
   lane :test do
-    gradle(task: "testDebugUnitTest")
+    gradle(task: "testStagingReleaseUnitTest")
   end
 
   desc "Run Android Lint"
   lane :lint do
-    gradle(task: "lintDebug")
+    gradle(task: "lintStagingRelease")
   end
 
   desc "Build a debug APK (used for local/interview demo runs)"
@@ -34,7 +34,7 @@ platform :android do
   lane :ci do
     lint
     test
-    build_debug
+    build_release
   end
 
   desc "Deploy a release build to the Play Store internal testing track"

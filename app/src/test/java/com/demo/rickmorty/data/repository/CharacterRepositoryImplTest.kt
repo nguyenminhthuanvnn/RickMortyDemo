@@ -1,6 +1,8 @@
 package com.demo.rickmorty.data.repository
 
 import androidx.paging.PagingSource
+import com.demo.rickmorty.data.local.RickMortyDatabase
+import com.demo.rickmorty.data.local.dao.CharacterDao
 import com.demo.rickmorty.data.remote.CharacterApi
 import com.demo.rickmorty.data.remote.dto.CharacterDto
 import com.demo.rickmorty.data.remote.dto.CharacterResponseDto
@@ -8,6 +10,7 @@ import com.demo.rickmorty.data.remote.dto.LocationRefDto
 import com.demo.rickmorty.data.remote.dto.PageInfoDto
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -15,10 +18,15 @@ import org.junit.Test
 class CharacterRepositoryImplTest {
 
     private val api: CharacterApi = mockk()
-    private val repository = CharacterRepositoryImpl(api)
+    private val database: RickMortyDatabase = mockk()
+    private val repository = CharacterRepositoryImpl(api, database)
 
     @Test
     fun `getCharacters builds a pager whose source maps dto to domain`() = runTest {
+        val dao: CharacterDao = mockk()
+        every { database.characterDao() } returns dao
+        every { dao.getCharacters(any()) } returns mockk()
+
         coEvery { api.getCharacters(page = 1, name = null) } returns CharacterResponseDto(
             info = PageInfoDto(count = 1, pages = 1, next = null, prev = null),
             results = listOf(

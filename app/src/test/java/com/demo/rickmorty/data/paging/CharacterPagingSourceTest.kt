@@ -6,14 +6,19 @@ import com.demo.rickmorty.data.remote.dto.CharacterDto
 import com.demo.rickmorty.data.remote.dto.CharacterResponseDto
 import com.demo.rickmorty.data.remote.dto.LocationRefDto
 import com.demo.rickmorty.data.remote.dto.PageInfoDto
+import com.demo.rickmorty.util.MainDispatcherRule
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
 
 class CharacterPagingSourceTest {
+
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
 
     private val api: CharacterApi = mockk()
 
