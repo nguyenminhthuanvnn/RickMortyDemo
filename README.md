@@ -116,7 +116,7 @@ automatically.
 **Command line:**
 
 ```bash
-git clone <your-repo-url>
+git clone git@github.com:nguyenminhthuanvnn/RickMortyDemo.git
 cd RickMortyDemo
 # If gradle-wrapper.jar isn't present (see note below), generate it once:
 gradle wrapper --gradle-version 8.9

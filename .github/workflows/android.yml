@@ -3,8 +3,6 @@ name: Android CI
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
   workflow_dispatch:
 
 concurrency:
@@ -32,10 +30,10 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run Android Lint
-        run: ./gradlew lintDebug --stacktrace
+        run: ./gradlew lintStagingDebug --stacktrace
 
       - name: Run unit tests (JVM)
-        run: ./gradlew testDebugUnitTest --stacktrace
+        run: ./gradlew testStagingDebugUnitTest --stacktrace
 
       - name: Upload lint report
         if: always()
