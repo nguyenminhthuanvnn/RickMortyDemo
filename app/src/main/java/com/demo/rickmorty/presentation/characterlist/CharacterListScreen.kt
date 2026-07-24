@@ -44,6 +44,7 @@ import com.demo.rickmorty.ui.components.LoadStateFooter
  */
 @Composable
 fun CharacterListScreen(
+    onNavigateToDetail: (Int) -> Unit,
     viewModel: CharacterListViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -56,7 +57,7 @@ fun CharacterListScreen(
                 is CharacterListEffect.ShowMessage ->
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 is CharacterListEffect.NavigateToDetail ->
-                    Toast.makeText(context, "Character #${effect.characterId}", Toast.LENGTH_SHORT).show()
+                    onNavigateToDetail(effect.characterId)
             }
         }
     }

@@ -1,7 +1,9 @@
 package com.demo.rickmorty.data.remote
 
+import com.demo.rickmorty.data.remote.dto.CharacterDto
 import com.demo.rickmorty.data.remote.dto.CharacterResponseDto
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
@@ -17,7 +19,8 @@ interface CharacterApi {
         @Query("name") name: String? = null
     ): CharacterResponseDto
 
-    companion object {
-        const val BASE_URL = "https://rickandmortyapi.com/api/"
-    }
+    @GET("character/{id}")
+    suspend fun getCharacter(
+        @Path("id") id: Int
+    ): CharacterDto
 }
