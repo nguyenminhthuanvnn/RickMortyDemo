@@ -161,7 +161,6 @@ bundle exec fastlane android deploy_internal  # upload to Play Store internal tr
 `deploy_internal` is left ready-to-wire for a real Play Store upload (add a
 service account JSON path and release signing config to use it for real).
 
-## What I'd add next (good talking points for an interview)
 
 - A detail screen (nav-compose is already a dependency) reached via the
   `NavigateToDetail` effect that's already wired but currently just shows a
