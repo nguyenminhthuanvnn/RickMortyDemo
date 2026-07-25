@@ -39,6 +39,9 @@ jobs:
       - name: Run unit tests (JVM)
         run: gradle testStagingDebugUnitTest --stacktrace
 
+      - name: Verify UI Snapshots (Paparazzi)
+        run: gradle verifyPaparazziStagingDebug --stacktrace
+
       - name: Upload lint report
         if: always()
         uses: actions/upload-artifact@v4
@@ -52,3 +55,10 @@ jobs:
         with:
           name: unit-test-report
           path: app/build/reports/tests/testStagingDebugUnitTest
+
+      - name: Upload Paparazzi failure reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paparazzi-failures
+          path: app/build/reports/paparazzi/stagingDebug
