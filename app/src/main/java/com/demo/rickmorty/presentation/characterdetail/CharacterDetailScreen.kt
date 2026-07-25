@@ -26,10 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.demo.rickmorty.domain.model.Character
+import com.demo.rickmorty.domain.model.CharacterStatus
+import com.demo.rickmorty.presentation.theme.RickMortyTheme
 
 @Composable
 fun CharacterDetailScreen(
@@ -135,6 +139,50 @@ private fun InfoRow(label: String, value: String) {
         Text(
             text = value,
             style = MaterialTheme.typography.bodyLarge
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CharacterDetailContentPreview() {
+    RickMortyTheme {
+        CharacterDetailContent(
+            state = CharacterDetailState(
+                character = Character(
+                    id = 1,
+                    name = "Rick Sanchez",
+                    status = CharacterStatus.ALIVE,
+                    species = "Human",
+                    gender = "Male",
+                    imageUrl = "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
+                    originName = "Earth (C-137)",
+                    locationName = "Citadel of Ricks"
+                )
+            ),
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CharacterDetailContentLoadingPreview() {
+    RickMortyTheme {
+        CharacterDetailContent(
+            state = CharacterDetailState(isLoading = true),
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CharacterDetailContentErrorPreview() {
+    RickMortyTheme {
+        CharacterDetailContent(
+            state = CharacterDetailState(error = "Failed to load character"),
+            onIntent = {}
         )
     }
 }

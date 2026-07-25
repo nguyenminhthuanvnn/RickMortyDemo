@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
@@ -25,17 +24,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import android.widget.Toast
 import com.demo.rickmorty.domain.model.Character
+import com.demo.rickmorty.domain.model.CharacterStatus
+import com.demo.rickmorty.presentation.theme.RickMortyTheme
 import com.demo.rickmorty.ui.components.CharacterItem
 import com.demo.rickmorty.ui.components.LoadStateFooter
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Stateful entry point - wired to Hilt's ViewModel. Kept separate from the
@@ -169,5 +173,72 @@ fun CharacterListContent(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CharacterListContentPreview() {
+    val characters = listOf(
+        Character(
+            id = 1,
+            name = "Rick Sanchez",
+            status = CharacterStatus.ALIVE,
+            species = "Human",
+            gender = "Male",
+            imageUrl = "",
+            originName = "Earth",
+            locationName = "Earth"
+        ),
+        Character(
+            id = 2,
+            name = "Morty Smith",
+            status = CharacterStatus.ALIVE,
+            species = "Human",
+            gender = "Male",
+            imageUrl = "",
+            originName = "Earth",
+            locationName = "Earth"
+        )
+    )
+    val pagingData = PagingData.from(characters)
+    val pagingItems = flowOf(pagingData).collectAsLazyPagingItems()
+
+    RickMortyTheme {
+        CharacterListContent(
+            state = CharacterListState(),
+            pagingItems = pagingItems,
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CharacterListContentSearchVisiblePreview() {
+    val characters = listOf(
+        Character(
+            id = 1,
+            name = "Rick Sanchez",
+            status = CharacterStatus.ALIVE,
+            species = "Human",
+            gender = "Male",
+            imageUrl = "",
+            originName = "Earth",
+            locationName = "Earth"
+        )
+    )
+    val pagingData = PagingData.from(characters)
+    val pagingItems = flowOf(pagingData).collectAsLazyPagingItems()
+
+    RickMortyTheme {
+        CharacterListContent(
+            state = CharacterListState(
+                searchQuery = "Rick",
+                isSearchBarVisible = true
+            ),
+            pagingItems = pagingItems,
+            onIntent = {}
+        )
     }
 }
