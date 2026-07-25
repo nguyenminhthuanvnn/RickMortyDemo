@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "943783289079",
+    "project_id": "demoapp-6bb25",
+    "storage_bucket": "demoapp-6bb25.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:943783289079:android:770a102a2687776fd5f3f2",
+        "android_client_info": {
+          "package_name": "com.demo.rickmorty"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOuK8Kv1EZKI_N9oruyECgqGHetz0_Zvk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
