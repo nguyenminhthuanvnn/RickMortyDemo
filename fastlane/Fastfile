@@ -37,6 +37,22 @@ platform :android do
     build_release
   end
 
+  desc "Distribute Staging build to Firebase App Distribution"
+  lane :distribute_staging do
+    # 1. Build the Staging Release APK
+    gradle(task: "assembleStagingRelease")
+
+    # 2. Upload to Firebase
+    # Note: Requires FIREBASE_TOKEN and FIREBASE_APP_ID environment variables
+    firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID"] || "1:943783289079:android:770a102a2687776fd5f3f2",
+#       groups: ENV["FIREBASE_DISTRIBUTION_GROUPS"] || "testers",
+      service_credentials_file: ENV["FIREBASE_CREDENTIALS_PATH"],
+      release_notes: "Build from CI: " + last_git_commit[:message],
+      apk_path: "app/build/outputs/apk/staging/release/app-staging-release.apk"
+    )
+  end
+
   desc "Deploy a release build to the Play Store internal testing track"
   lane :deploy_internal do
     build_bundle

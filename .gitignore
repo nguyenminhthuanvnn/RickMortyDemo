@@ -135,3 +135,4 @@ fastlane/readme.md
 # Ruby / Bundler
 /vendor/bundle
 .bundle
+/fastlane/demoapp-6bb25-firebase-adminsdk-fbsvc-0961776684.json

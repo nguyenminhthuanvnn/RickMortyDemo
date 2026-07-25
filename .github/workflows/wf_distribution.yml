@@ -25,18 +25,41 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
-          bundler-cache: true
+          bundler-cache: true # caches gems based on Gemfile.lock
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.9
 
+      - name: Decode Firebase service account credentials
+        env:
+           FIREBASE_SERVICE_ACCOUNT_B64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_B64 }}
+        run: |
+          echo "$FIREBASE_SERVICE_ACCOUNT_B64" | base64 --decode > firebase-service-account.json
+
+      - name: Decode release keystore
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          echo "$ANDROID_KEYSTORE_B64" | base64 --decode > release.keystore.jks
+
       - name: Distribute to Firebase
-        run: bundle exec fastlane android distribute_staging
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_CREDENTIALS_PATH: ${{ github.workspace }}/firebase-service-account.json
+          FIREBASE_DISTRIBUTION_GROUPS: ${{ vars.FIREBASE_DISTRIBUTION_GROUPS }}  # e.g. "testers"
+          ANDROID_PACKAGE_NAME: ${{ vars.ANDROID_PACKAGE_NAME }}
+          RELEASE_NOTES: "Build ${{ github.run_number }} - ${{ github.sha }}"
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/release.keystore.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: bundle exec fastlane android distribute_staging release.keystore.jks
+
+      - name: Clean up credentials file
+        if: always()
+        run: rm -f firebase-service-account.json
 
       - name: Slack Notification
         if: success()

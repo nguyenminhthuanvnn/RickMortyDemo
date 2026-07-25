@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -21,9 +23,33 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        val keystorePropertiesFile = rootProject.file("local.properties")
+        val keystoreProperties = Properties()
+        if (keystorePropertiesFile.exists()) {
+            keystoreProperties.load(keystorePropertiesFile.inputStream())
+        }
+
+        create("release") {
+            val path = keystoreProperties.getProperty("RELEASE_KEYSTORE_PATH")
+                ?: System.getenv("ANDROID_KEYSTORE_PATH")
+                ?: "rickykeystore-release.jks"
+
+            storeFile = rootProject.file(path)
+            storePassword = keystoreProperties.getProperty("RELEASE_KEYSTORE_PASSWORD")
+                ?: System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias = keystoreProperties.getProperty("RELEASE_KEY_ALIAS")
+                ?: System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword = keystoreProperties.getProperty("RELEASE_KEY_PASSWORD")
+                ?: System.getenv("ANDROID_KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {
