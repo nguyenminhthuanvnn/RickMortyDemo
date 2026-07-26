@@ -57,9 +57,11 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: bundle exec fastlane android distribute_staging release.keystore.jks
 
-      - name: Clean up credentials file
+      - name: Clean up credentials files
         if: always()
-        run: rm -f firebase-service-account.json
+        run: |
+          rm -f firebase-service-account.json
+          rm -f release.keystore.jks
 
       - name: Slack Notification
         if: success()
