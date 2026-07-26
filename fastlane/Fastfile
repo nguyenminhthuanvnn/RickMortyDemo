@@ -52,12 +52,11 @@ platform :android do
     )
 
     # 2. Upload to Firebase
-    # Note: Requires FIREBASE_TOKEN and FIREBASE_APP_ID environment variables
     firebase_app_distribution(
-      app: ENV["FIREBASE_APP_ID"] || "1:943783289079:android:770a102a2687776fd5f3f2",
+      app: ENV["FIREBASE_APP_ID"],
       groups: ENV["FIREBASE_DISTRIBUTION_GROUPS"] || "testers",
       service_credentials_file: ENV["FIREBASE_CREDENTIALS_PATH"],
-      release_notes: "Build from CI: " + last_git_commit[:message],
+      release_notes: "Build from CI: " + (last_git_commit[:message] rescue "No commit message"),
       apk_path: "app/build/outputs/apk/staging/release/app-staging-release.apk"
     )
   end
