@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -104,7 +105,9 @@ fun CharacterListContent(
             }
         }
     ) { padding ->
-        Box(
+        PullToRefreshBox(
+            isRefreshing = pagingItems.loadState.refresh is LoadState.Loading,
+            onRefresh = { pagingItems.refresh() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
