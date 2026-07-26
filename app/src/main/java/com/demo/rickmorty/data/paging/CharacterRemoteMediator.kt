@@ -12,6 +12,7 @@ import com.demo.rickmorty.data.mapper.toDomain
 import com.demo.rickmorty.data.mapper.toEntity
 import com.demo.rickmorty.data.remote.CharacterApi
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalPagingApi::class)
 class CharacterRemoteMediator(
@@ -19,6 +20,20 @@ class CharacterRemoteMediator(
     private val api: CharacterApi,
     private val database: RickMortyDatabase
 ) : RemoteMediator<Int, CharacterEntity>() {
+
+    override suspend fun initialize(): InitializeAction {
+        val cacheTimeout = TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS)
+        val lastUpdated = database.remoteKeysDao().getCreationTime() ?: 0L
+        val now = System.currentTimeMillis()
+
+        return if (now - lastUpdated <= cacheTimeout) {
+            // Cached data is fresh, skip remote refresh and use local data
+            InitializeAction.SKIP_INITIAL_REFRESH
+        } else {
+            // Cached data is stale or doesn't exist, trigger a remote refresh
+            InitializeAction.LAUNCH_INITIAL_REFRESH
+        }
+    }
 
     override suspend fun load(
         loadType: LoadType,
@@ -56,7 +71,12 @@ class CharacterRemoteMediator(
                 val prevKey = if (page == 1) null else page - 1
                 val nextKey = if (endOfPaginationReached) null else page + 1
                 val keys = characters.map {
-                    RemoteKeys(characterId = it.id, prevKey = prevKey, nextKey = nextKey)
+                    RemoteKeys(
+                        characterId = it.id,
+                        prevKey = prevKey,
+                        nextKey = nextKey,
+                        lastUpdated = System.currentTimeMillis()
+                    )
                 }
                 database.remoteKeysDao().insertAll(keys)
                 database.characterDao().insertAll(characters.map { it.toDomain().toEntity() })
