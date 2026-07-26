@@ -1,171 +1,102 @@
 # Rick & Morty Demo — Android Interview Project
 
-A complete, runnable Android sample built to demonstrate:
+A complete, runnable Android sample built to demonstrate modern Android development practices:
 
 - **Clean Architecture** (domain / data / presentation, dependency inversion)
-- **MVVM** (`StateFlow` exposed by `ViewModel`, collected by Compose)
-- **MVI** (unidirectional `Intent -> State/Effect` contract on top of MVVM)
-- **100% Jetpack Compose** UI, Material 3
-- **Remote data + infinite-scroll paging** via Paging 3, backed by the free,
-  no-auth [Rick and Morty API](https://rickandmortyapi.com/)
-- **Unit tests** (JVM, MockK + Turbine + Truth) and a **Compose UI test**
+- **MVVM + MVI** (unidirectional `Intent -> State/Effect` contract)
+- **100% Jetpack Compose** UI with Material 3 and **Pull-to-Refresh**
+- **Offline-First Paging**: Paging 3 with `RemoteMediator` and Room cache
+- **Cache Expiration Strategy**: 1-hour time-based invalidation for local data
+- **Unit & Snapshot Tests**: JVM tests (MockK + Turbine) and **Paparazzi UI snapshots**
 - **Hilt** for dependency injection
-- **GitHub Actions** CI (lint, unit tests, Fastlane lane, debug APK, optional
-  instrumented tests on an emulator)
-- **Fastlane** lanes for local/CI automation and Play Store deployment
+- **Advanced CI/CD**: Multi-workflow GitHub Actions for PR verification and Continuous Distribution
+- **Fastlane**: Automated build, test, and **Firebase App Distribution** pipelines
 
 ## Screens
 
-One screen: a searchable, infinitely-scrolling list of Rick & Morty
-characters. Scrolling near the bottom triggers Paging 3 to fetch the next
-page automatically; a footer spinner/retry row shows load progress or
-errors.
+- **Character List**: A searchable, infinitely-scrolling list with Pull-to-Refresh support.
+- **Character Detail**: Detailed view of a character including species, status, origin, and location.
 
 ## Architecture
 
 ```
 presentation/          <- Compose UI + ViewModel (MVVM) + MVI contract
-  characterlist/
-    CharacterListContract.kt   State / Intent / Effect
-    CharacterListViewModel.kt  StateFlow<State>, onIntent(), Flow<PagingData>
-    CharacterListScreen.kt     Stateful screen + stateless Content composable
-  theme/                Material3 theme, color tokens
+  characterlist/       State / Intent / Effect / Screen
+  characterdetail/     State / Intent / Effect / Screen
+  theme/               Material3 theme, color tokens
 ui/components/          Reusable, dumb composables (CharacterItem, LoadStateFooter)
 
 domain/                 <- Pure Kotlin, no Android/Retrofit/Compose deps
   model/Character.kt
-  repository/CharacterRepository.kt   (interface — dependency inversion point)
+  repository/CharacterRepository.kt   (Interface)
   usecase/GetCharactersUseCase.kt
 
-data/                   <- Everything that knows about the network
+data/                   <- Network + Local Persistence
   remote/CharacterApi.kt, dto/*.kt
-  paging/CharacterPagingSource.kt     (drives "scroll to load more")
+  local/RickMortyDatabase.kt, dao/*.kt, entity/*.kt
+  paging/CharacterRemoteMediator.kt   (Offline-first logic)
   repository/CharacterRepositoryImpl.kt
-  mapper/CharacterMapper.kt           DTO -> domain model
+  mapper/CharacterMapper.kt           DTO -> Entity -> Domain model
 
-di/                      Hilt modules (Network, Repository binding)
+di/                      Hilt modules (Network, Repository, Database)
 ```
 
-Dependency rule: `presentation -> domain <- data`. The domain layer defines
-`CharacterRepository` as an interface; `data` implements it; `presentation`
-only ever talks to the interface and to `GetCharactersUseCase`. Swapping the
-backend (e.g. GraphQL, a local Room cache, etc.) never touches
-`presentation`.
+### Offline-First Strategy
+The app uses Room as the **Single Source of Truth**. The `RemoteMediator` manages data synchronization:
+- **Initialization**: Checks a `lastUpdated` timestamp in the database. If the cache is older than **1 hour**, it triggers a fresh fetch from the network.
+- **Resilience**: If the device is offline, the app continues to show cached data and provides a "Retry" option in the list footer when connectivity is restored.
 
-### MVI contract
+## CI/CD: GitHub Actions
 
-```kotlin
-data class CharacterListState(val searchQuery: String = "", val isSearchBarVisible: Boolean = false)
+The project features a modular CI/CD setup:
 
-sealed interface CharacterListIntent {
-    data class OnSearchQueryChanged(val query: String) : CharacterListIntent
-    data object OnToggleSearchBar : CharacterListIntent
-    data object OnClearSearch : CharacterListIntent
-    data class OnCharacterClicked(val characterId: Int) : CharacterListIntent
-}
+1. **Unit Test on PR (`wf_unit_test_on_pr.yml`)**:
+   - Runs on every PR opened/updated against `main`.
+   - Executes `./gradlew lintStagingDebug` and `./gradlew testStagingDebugUnitTest`.
+   - Performs **Paparazzi UI Snapshot verification** to prevent visual regressions.
+   - Uploads HTML reports and snapshot failure diffs as artifacts.
 
-sealed interface CharacterListEffect {
-    data class ShowMessage(val message: String) : CharacterListEffect
-    data class NavigateToDetail(val characterId: Int) : CharacterListEffect
-}
+2. **Continuous Distribution (`wf_distribution.yml`)**:
+   - Runs automatically when code is merged into `main`.
+   - Implements **Dynamic Versioning** using the `github.run_number`.
+   - Decodes a secure production keystore from GitHub Secrets.
+   - Builds and signs a `StagingRelease` APK.
+   - Distributes the build to **Firebase App Distribution** for testers.
+
+## Fastlane
+
+```bash
+bundle install                         # Install dependencies
+bundle exec fastlane android lint       # Static analysis
+bundle exec fastlane android test       # JVM unit tests
+bundle exec fastlane android distribute_staging  # Build & Upload to Firebase
+bundle exec fastlane android ci                 # Full pipeline (lint + test + build)
 ```
 
-The Composable never mutates state directly — it only calls
-`onIntent(...)`. The ViewModel is the single source of truth
-(`StateFlow<CharacterListState>`) and emits one-off `Effect`s (snackbars/nav)
-through a `Channel`, so they aren't redelivered on rotation. Paging data is
-modeled as its own `Flow<PagingData<Character>>` (the idiomatic Paging 3 +
-Compose pattern) rather than embedded in `State`, since `PagingData` is
-already a stream designed to be collected independently via
-`collectAsLazyPagingItems()`.
-
-### Paging / infinite scroll
-
-`CharacterPagingSource` calls the Rick & Morty API page by page; the "next
-page" key comes straight from the API's own `info.next` pagination link.
-`CharacterRepositoryImpl` wraps it in a `Pager` with `cachedIn(viewModelScope)`
-so the list survives configuration changes. The Compose screen calls
-`LazyColumn` with `pagingItems.itemCount`, which is what makes scrolling
-toward the bottom trigger the next `load()` call automatically — no manual
-"reached bottom" detection needed.
+### Security & Signing
+- **Keystores**: Signing keys are never committed. Locally, they are read from `local.properties`. In CI, they are reconstructed from Base64-encoded GitHub Secrets.
+- **Service Accounts**: Firebase credentials are handled via secure environment variables and temporary JSON files on the CI runner.
 
 ## Tests included
 
 | File | What it covers |
 |---|---|
-| `CharacterMapperTest` | DTO → domain mapping, status parsing |
-| `CharacterPagingSourceTest` | first page, last page, IOException → `LoadResult.Error`, search query passthrough |
-| `CharacterRepositoryImplTest` | repository wiring |
-| `GetCharactersUseCaseTest` | use case delegates correctly to the repository |
-| `CharacterListViewModelTest` | MVI: every Intent → expected State, debounced search triggers a new use-case call (MockK + Turbine) |
-| `CharacterListContentTest` (androidTest) | Compose UI renders a character name; search bar shows when state says so |
-
-Run them with:
-
-```bash
-./gradlew testDebugUnitTest        # JVM unit tests
-./gradlew connectedDebugAndroidTest # instrumented Compose UI test (needs device/emulator)
-```
+| `CharacterMapperTest` | DTO → Entity → Domain mapping logic |
+| `CharacterPagingSourceTest` | Network-only pagination, error handling, search queries |
+| `CharacterRepositoryImplTest` | Repository wiring with Database and API mocks |
+| `CharacterListViewModelTest` | MVI contract: Intent → State/Effect transitions (Turbine) |
+| `CharacterItemSnapshotTest` | **Paparazzi Snapshot**: Visual verification of UI components |
 
 ## Building & running
 
-**Recommended:** open the project root in **Android Studio (Koala/2024.1+)**
-and click Run — Android Studio will generate the Gradle wrapper jar and sync
-automatically.
+**Recommended:** Open in **Android Studio (Koala/2024.1+)**.
 
 **Command line:**
-
 ```bash
-git clone git@github.com:nguyenminhthuanvnn/RickMortyDemo.git
-cd RickMortyDemo
-# If gradle-wrapper.jar isn't present (see note below), generate it once:
+# Generate wrapper if missing
 gradle wrapper --gradle-version 8.9
-./gradlew assembleDebug
-./gradlew installDebug   # with a device/emulator attached
+# Build staging variant
+./gradlew assembleStagingDebug
 ```
 
-> **Note on the Gradle wrapper jar:** this project ships `gradlew`,
-> `gradlew.bat` and `gradle-wrapper.properties`, but the small binary
-> `gradle/wrapper/gradle-wrapper.jar` isn't included in this generated
-> bundle (binary files don't transfer well through this channel, and the
-> sandbox this was built in has no network access to `services.gradle.org`
-> to fetch one). Opening the project in Android Studio regenerates it
-> automatically, or run `gradle wrapper` once locally if you have Gradle
-> installed. This is the only manual step needed before `./gradlew` works.
-
-No API key or `local.properties` secrets are required — the Rick & Morty API
-is free and public.
-
-## CI: GitHub Actions
-
-`.github/workflows/android.yml` runs on every push/PR to `main`:
-
-1. **lint-and-unit-test** — `./gradlew lintDebug` + `./gradlew testDebugUnitTest`, uploads reports as artifacts
-2. **fastlane** — runs the `ci` Fastlane lane (`lint` → `test` → `build_debug`) via `bundle exec fastlane android ci`
-3. **build** — `./gradlew assembleDebug`, uploads the APK as a build artifact
-4. **instrumented-test** — runs the Compose UI test on a macOS-hosted emulator (`reactivecircus/android-emulator-runner`)
-
-## Fastlane
-
-```bash
-bundle install                  # installs fastlane from the Gemfile
-bundle exec fastlane android lint
-bundle exec fastlane android test
-bundle exec fastlane android build_debug
-bundle exec fastlane android ci              # lint + test + build_debug, what CI runs
-bundle exec fastlane android build_bundle     # release .aab
-bundle exec fastlane android deploy_internal  # upload to Play Store internal track (needs a service-account json + signing config)
-```
-
-`fastlane/Appfile` sets the package name (`com.demo.rickmorty`);
-`deploy_internal` is left ready-to-wire for a real Play Store upload (add a
-service account JSON path and release signing config to use it for real).
-
-
-- A detail screen (nav-compose is already a dependency) reached via the
-  `NavigateToDetail` effect that's already wired but currently just shows a
-  Toast
-- A `RemoteMediator` + Room cache for true offline-first paging
-- Screenshot/snapshot tests (e.g. Paparazzi) for the Compose UI
-- A `BuildConfig`-driven base URL / flavors for staging vs. prod
-- Test123
+**Note:** For local release builds, ensure you have configured `RELEASE_KEYSTORE_PATH` in your `local.properties` or have a `rickykeystore-release.jks` in the root (it will fallback to debug signing if missing).
