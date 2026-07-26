@@ -38,9 +38,18 @@ platform :android do
   end
 
   desc "Distribute Staging build to Firebase App Distribution"
-  lane :distribute_staging do
+  lane :distribute_staging do |options|
     # 1. Build the Staging Release APK
-    gradle(task: "assembleStagingRelease")
+    version_code = options[:version_code] || ENV["VERSION_CODE"]
+    version_name = options[:version_name] || ENV["VERSION_NAME"]
+
+    gradle(
+      task: "assembleStagingRelease",
+      properties: {
+        "versionCode" => version_code,
+        "versionName" => version_name
+      }.delete_if { |k, v| v.nil? }
+    )
 
     # 2. Upload to Firebase
     # Note: Requires FIREBASE_TOKEN and FIREBASE_APP_ID environment variables
