@@ -1,6 +1,7 @@
 package com.demo.rickmorty.di
 
 import com.demo.rickmorty.data.repository.CharacterRepositoryImpl
+import com.demo.rickmorty.data.repository.MockCharacterRepository
 import com.demo.rickmorty.domain.repository.CharacterRepository
 import dagger.Binds
 import dagger.Module
@@ -20,6 +21,7 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindCharacterRepository(
-        impl: CharacterRepositoryImpl
+         impl: CharacterRepositoryImpl
+//        impl: MockCharacterRepository
     ): CharacterRepository
 }
