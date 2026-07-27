@@ -4,7 +4,10 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
-
+    inputs:
+      notes:
+        default: "Default note"
+        description: "What's new"
 jobs:
   distribute:
     name: Distribute Staging APK
