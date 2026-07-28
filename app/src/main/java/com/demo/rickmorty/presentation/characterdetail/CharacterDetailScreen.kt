@@ -1,5 +1,6 @@
 package com.demo.rickmorty.presentation.characterdetail
 
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
@@ -92,6 +95,15 @@ fun CharacterDetailContent(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
+                            .verticalScroll(rememberScrollState(initial = 0))
+//                            .scrollable(
+//                                rememberScrollState(initial = 0),
+//                                orientation = androidx.compose.foundation.gestures.Orientation.Vertical,
+//                                enabled = true,
+//                                reverseDirection = false,
+//                                flingBehavior = null,
+//                                interactionSource = null
+//                            )
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
